@@ -43,8 +43,11 @@ def check(condition: bool, label: str) -> None:
 def wait_for(predicate, timeout: float = 20.0) -> bool:
     deadline = time.time() + timeout
     while time.time() < deadline:
-        if predicate():
-            return True
+        try:
+            if predicate():
+                return True
+        except (urllib.error.URLError, ConnectionError, OSError):
+            pass  # not listening yet: keep waiting
         time.sleep(0.25)
     return False
 
