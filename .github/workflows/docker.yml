@@ -1,0 +1,86 @@
+name: docker
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -r requirements-dev.txt
+      - run: pytest -q
+
+  image:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Image name
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: docker build -t "$IMAGE:${{ github.sha }}" -t "$IMAGE:latest" .
+
+      - name: Start fake stock + email API
+        run: |
+          nohup python3 scripts/fake_upstream.py --port 9100 > fake.log 2>&1 &
+          sleep 1
+
+      - name: Run the container with only the documented env vars
+        run: |
+          docker run -d --name bis --network host \
+            -e PORT=8080 \
+            -e STOCK_API_URL=http://127.0.0.1:9100/products \
+            -e STOCK_API_KEY=test-stock-key \
+            -e RESEND_API_KEY=test-resend-key \
+            -e RESEND_BASE_URL=http://127.0.0.1:9100 \
+            -e WEBHOOK_SECRET=ci-secret \
+            "$IMAGE:${{ github.sha }}"
+
+      - name: End-to-end smoke test
+        run: python3 scripts/smoke.py --app http://127.0.0.1:8080 --fake http://127.0.0.1:9100 --secret ci-secret --sku CI-1
+
+      - name: Data survives a container restart
+        run: |
+          docker restart bis
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8080/healthz && break; sleep 1; done
+          curl -fsS -u admin:ci-secret "http://127.0.0.1:8080/admin?q=CI-1" | grep -q "Notified"
+          python3 scripts/smoke.py --app http://127.0.0.1:8080 --fake http://127.0.0.1:9100 --secret ci-secret
+
+      - name: Container runs as non-root and is healthy
+        run: |
+          test "$(docker exec bis id -u)" != "0"
+          for i in $(seq 1 20); do
+            status=$(docker inspect -f '{{.State.Health.Status}}' bis)
+            [ "$status" = "healthy" ] && exit 0
+            sleep 3
+          done
+          echo "health status: $status"; exit 1
+
+      - name: Logs
+        if: always()
+        run: |
+          docker logs bis || true
+          cat fake.log || true
+
+      - name: Push to GHCR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker push "$IMAGE:${{ github.sha }}"
+          docker push "$IMAGE:latest"
