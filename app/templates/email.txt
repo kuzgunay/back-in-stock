@@ -1,0 +1,16 @@
+It's back in stock!
+
+You asked us to let you know when {{ name }} was available again. Good news: it just landed back in stock.
+
+  {{ name }}
+  SKU {{ sku }}{% if price %} · {{ price }}{% endif %}{% if quantity %} · Only {{ quantity }} left{% endif %}
+
+{% if shop_url %}
+Shop it now: {{ shop_url }}
+
+{% endif %}
+Popular items tend to sell out again quickly{% if not shop_url %}, so head back to {{ store_name }} soon if you'd like to grab one{% endif %}.
+
+--
+{{ store_name }}
+You're getting this one-time alert because {{ email }} asked to be notified when this item was restocked. We won't email you about it again.

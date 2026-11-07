@@ -1,0 +1,11 @@
+[project]
+name = "back-in-stock"
+version = "1.0.0"
+description = "Restock email alerts: embeddable signup form, verified stock webhooks, exactly-once delivery."
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+addopts = "-ra"

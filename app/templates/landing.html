@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Back in Stock · restock alerts for your store</title>
+<meta name="description" content="Let customers ask to be emailed when a sold-out item comes back. One email, exactly once.">
+<style nonce="{{ nonce }}">
+{% include "_admin_style.html" %}
+  .topbar nav { display: flex; gap: 8px; }
+  .hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 48px; align-items: center; padding: 64px 0 40px; }
+  .kicker { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 650; color: var(--green); background: var(--green-bg); border-radius: 999px; padding: 4px 10px; }
+  .kicker i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  h1 { margin: 16px 0 12px; font-size: 44px; line-height: 1.05; letter-spacing: -0.035em; }
+  .lede { margin: 0 0 24px; font-size: 17px; color: var(--ink-2); max-width: 46ch; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .actions .btn { height: 40px; padding: 0 16px; font-size: 14px; }
+  .demo { background: var(--line-2); border: 1px solid var(--line); border-radius: 20px; padding: 18px; }
+  .demo-label { font-size: 12px; font-weight: 650; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 10px 4px; }
+  .demo iframe { display: block; width: 100%; height: 300px; border: 0; }
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 16px 0 40px; }
+  .feature { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+  .feature h3 { margin: 0 0 6px; font-size: 15px; letter-spacing: -0.01em; }
+  .feature p { margin: 0; color: var(--muted); }
+  h2 { font-size: 20px; letter-spacing: -0.02em; margin: 0 0 12px; }
+  pre { margin: 0; background: #111114; color: #e4e4e7; border-radius: 14px; padding: 18px; overflow-x: auto; font-size: 12.5px; line-height: 1.6; }
+  .snippet { position: relative; margin-bottom: 16px; }
+  .copy { position: absolute; top: 10px; right: 10px; background: #26262b; color: #e4e4e7; border-color: #3a3a40; height: 28px; font-size: 12px; }
+  .endpoints { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; margin-bottom: 56px; }
+  .endpoints td { padding: 10px 16px; border-bottom: 1px solid var(--line-2); vertical-align: top; }
+  .endpoints tr:last-child td { border-bottom: 0; }
+  .endpoints td:first-child { white-space: nowrap; width: 1%; }
+  .method { display: inline-block; min-width: 46px; font-weight: 700; color: var(--muted); }
+  footer { border-top: 1px solid var(--line); padding: 20px 0 32px; color: var(--muted); font-size: 13px; }
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; gap: 28px; padding-top: 40px; }
+    h1 { font-size: 34px; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="/">
+      <span class="mark" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
+      <span>Back in Stock</span>
+    </a>
+    <nav><a class="btn" href="/admin">Admin</a></nav>
+  </div>
+</header>
+<main class="wrap">
+  <section class="hero">
+    <div>
+      <span class="kicker"><i></i>Restock alerts</span>
+      <h1>Sold out shouldn&rsquo;t mean lost sale.</h1>
+      <p class="lede">Drop a small form on any product page. When the item is really back in stock, each customer who asked gets one beautiful email. Not zero, not two.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="/embed">Open the form</a>
+        <a class="btn" href="#embed">Embed it on your store</a>
+      </div>
+    </div>
+    <div class="demo">
+      <p class="demo-label">Live preview</p>
+      <iframe id="bis-demo" src="/embed?sku=DEMO-1&amp;product=Linen%20Overshirt%20%C2%B7%20Sand" title="Back in stock signup form" loading="lazy"></iframe>
+    </div>
+  </section>
+
+  <section class="grid" aria-label="How it works">
+    <div class="feature"><h3>Verified restocks only</h3><p>Webhooks are treated as hints. Every restock is confirmed with the stock API before anyone is emailed.</p></div>
+    <div class="feature"><h3>Exactly one email</h3><p>Duplicate deliveries, retries and restarts can&rsquo;t double-send: each request is claimed once and sent with a stable idempotency key.</p></div>
+    <div class="feature"><h3>Nothing slips through</h3><p>Failed sends retry with backoff, and a reconciler sweeps for restocks whose webhook never arrived.</p></div>
+  </section>
+
+  <section id="embed">
+    <h2>Embed it</h2>
+    <p class="muted">Paste this where the &ldquo;Add to cart&rdquo; button would be. Set <span class="mono">sku</span> to hide the SKU field; <span class="mono">product</span>, <span class="mono">accent</span> (hex) and <span class="mono">theme</span> (light, dark, auto) are optional.</p>
+    <div class="snippet">
+      <button class="btn copy" type="button" data-copy="snippet-code">Copy</button>
+      <pre class="mono" id="snippet-code">&lt;iframe src="{{ base_url }}/embed?sku=ABC-1&amp;product=Linen%20Overshirt"
+        title="Get notified when it's back" style="width:100%;max-width:520px;height:300px;border:0"
+        id="back-in-stock"&gt;&lt;/iframe&gt;
+&lt;script&gt;
+  // Optional: let the form size itself.
+  addEventListener("message", function (e) {
+    if (e.data &amp;&amp; e.data.type === "back-in-stock:resize")
+      document.getElementById("back-in-stock").style.height = e.data.height + "px";
+  });
+&lt;/script&gt;</pre>
+    </div>
+
+    <h2>Endpoints</h2>
+    <table class="endpoints">
+      <tr><td><span class="method">GET</span> <span class="mono">/embed</span></td><td>Signup form, designed to live in an iframe.</td></tr>
+      <tr><td><span class="method">POST</span> <span class="mono">/api/requests</span></td><td><span class="mono">{"email", "sku"}</span> as JSON. Returns 201 for a new request, 200 with <span class="mono">already_subscribed</span> for a duplicate.</td></tr>
+      <tr><td><span class="method">POST</span> <span class="mono">/webhooks/stock</span></td><td>Stock events with the <span class="mono">X-Webhook-Secret</span> header.</td></tr>
+      <tr><td><span class="method">GET</span> <span class="mono">/admin</span></td><td>Requests, delivery status and webhook outcomes (password protected).</td></tr>
+      <tr><td><span class="method">GET</span> <span class="mono">/healthz</span></td><td>Liveness check.</td></tr>
+    </table>
+  </section>
+</main>
+<footer>
+  <div class="wrap">Back in Stock &middot; {{ store_name }}</div>
+</footer>
+<script nonce="{{ nonce }}">
+  (function () {
+    var frame = document.getElementById("bis-demo");
+    window.addEventListener("message", function (e) {
+      if (e.source === frame.contentWindow && e.data && e.data.type === "back-in-stock:resize") {
+        frame.style.height = Math.max(120, Math.min(900, e.data.height | 0)) + "px";
+      }
+    });
+    document.querySelectorAll("[data-copy]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var text = document.getElementById(button.getAttribute("data-copy")).textContent;
+        if (navigator.clipboard) navigator.clipboard.writeText(text).then(function () {
+          button.textContent = "Copied";
+          setTimeout(function () { button.textContent = "Copy"; }, 1500);
+        });
+      });
+    });
+  })();
+</script>
+</body>
+</html>
