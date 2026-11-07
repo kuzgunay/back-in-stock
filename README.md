@@ -124,7 +124,7 @@ pytest -q
 
 The suite runs against in-process fakes of the stock API and Resend (`httpx.MockTransport`) and makes no network calls. It covers: case-insensitive and concurrent duplicate signups; wrong or missing webhook secret; phantom restocks; the same `event_id` delivered twice at once; several events for one SKU at once; email 500s followed by a later retry with a stable Idempotency-Key; a lost provider response; a restart with a pending send; a crash between send and DB update; the stock API being down during a webhook; an item already in stock at signup; the reconciler catching a missed webhook; admin auth; the embed's framing headers; and XSS escaping.
 
-`scripts/smoke.py` runs the same scenario against a live server. CI (`.github/workflows/docker.yml`) runs the tests on Python 3.12 and 3.14, builds the image, runs it with only the documented env vars next to the fake upstream, runs the smoke test, restarts the container to check the data survived, checks that it runs as non-root and becomes healthy, and pushes to `ghcr.io` on `main`.
+`scripts/smoke.py` runs the same scenario against a live server. CI (`.github/workflows/docker.yml`) runs the tests on Python 3.12 and 3.14, builds the image, runs it with only the documented env vars next to the fake upstream, runs the smoke test, restarts the container to check the data survived, and checks that it runs as non-root and becomes healthy.
 
 ## Trade-offs and limits
 

@@ -8,7 +8,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   test:
@@ -77,10 +76,3 @@ jobs:
         run: |
           docker logs bis || true
           cat fake.log || true
-
-      - name: Push to GHCR
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
-          docker push "$IMAGE:${{ github.sha }}"
-          docker push "$IMAGE:latest"
