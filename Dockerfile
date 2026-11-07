@@ -18,11 +18,12 @@ RUN pip install -r requirements.txt
 
 COPY app ./app
 
-# The SQLite database lives on a volume so it survives container restarts
-# and re-creation. The directory is owned by the non-root user, and Docker
-# copies that ownership into a fresh named or anonymous volume.
+# The SQLite database lives in /data. A plain `docker restart` keeps it; mount
+# a volume there (`-v bis-data:/data`, or a Railway/Fly volume) to keep it when
+# the container is re-created. No VOLUME instruction: some hosts (Railway)
+# reject it and provide their own volumes. The directory is owned by the
+# non-root user, and Docker copies that ownership into a fresh named volume.
 RUN mkdir -p /data && chown app:app /data
-VOLUME ["/data"]
 
 USER app
 EXPOSE 8000
