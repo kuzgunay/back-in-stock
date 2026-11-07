@@ -221,7 +221,7 @@ class Notifier:
             message = build_email(row, product, self.settings)
             result = await self.mailer.send(
                 to=row["email"], subject=message.subject, html=message.html,
-                text=message.text, idempotency_key=f"bis-request-{request_id}")
+                text=message.text, idempotency_key=f"bis-{self.store.install_id}-{request_id}")
         except Exception as exc:  # never lose a row to an unexpected bug
             log.exception("send_crashed", extra={"request_id": request_id})
             await self.store.mark_send_retry(

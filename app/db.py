@@ -14,6 +14,7 @@ from __future__ import annotations
 import asyncio
 import functools
 import sqlite3
+import uuid
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from datetime import timedelta
@@ -50,6 +51,13 @@ CREATE UNIQUE INDEX IF NOT EXISTS requests_one_open_per_email_sku
 CREATE INDEX IF NOT EXISTS requests_by_sku_status ON requests (sku, status);
 CREATE INDEX IF NOT EXISTS requests_due ON requests (status, next_attempt_at);
 CREATE INDEX IF NOT EXISTS requests_by_created ON requests (created_at);
+
+-- One row per database: a random install id that namespaces Idempotency-Keys,
+-- so a fresh database can never reuse a key an earlier one already sent with.
+CREATE TABLE IF NOT EXISTS meta (
+    key   TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
 
 CREATE TABLE IF NOT EXISTS webhook_events (
     event_id          TEXT    PRIMARY KEY,
@@ -120,6 +128,10 @@ class Store:
         conn.execute("PRAGMA synchronous=FULL")
         conn.execute("PRAGMA foreign_keys=ON")
         conn.executescript(SCHEMA)
+        conn.execute("INSERT OR IGNORE INTO meta (key, value) VALUES ('install_id', ?)",
+                     (uuid.uuid4().hex[:12],))
+        self.install_id: str = conn.execute(
+            "SELECT value FROM meta WHERE key = 'install_id'").fetchone()[0]
         self._conn = conn
 
     # -- plumbing ---------------------------------------------------------

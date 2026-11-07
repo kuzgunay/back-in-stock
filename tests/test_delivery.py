@@ -36,7 +36,7 @@ async def test_failed_send_is_retried_later_with_same_idempotency_key(h, stock, 
     clock.advance(10)
     await h.drain()
     assert len(resend.accepted) == 1
-    assert [a.idempotency_key for a in resend.attempts] == [f"bis-request-{rid}"] * 2
+    assert [a.idempotency_key for a in resend.attempts] == [f"bis-{h.ctx.store.install_id}-{rid}"] * 2
     row = await h.ctx.store.get_request(rid)
     assert row["status"] == "notified"
     assert row["attempts"] == 2
@@ -111,7 +111,7 @@ async def test_crash_between_send_and_db_update_is_covered_by_idempotency_key(
         # provider accepted the email, but 'notified' was never written.
         (row,) = await h.ctx.store.lease_due_sends(10, LEASE_SECONDS)
         result = await h.ctx.mailer.send(to=row["email"], subject="s", html="h", text="t",
-                                         idempotency_key=f"bis-request-{rid}")
+                                         idempotency_key=f"bis-{h.ctx.store.install_id}-{rid}")
         assert result.ok
     assert len(resend.accepted) == 1
 
