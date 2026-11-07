@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import base64
 import json
+import re
 import sys
 import time
 import urllib.error
@@ -102,7 +103,8 @@ def main() -> None:
     sent = emails_to(fake, customer)
     check(len(sent) == 1, f"exactly one email to the customer ({len(sent)})")
     check(sent[0]["subject"].endswith("is back in stock"), "subject looks right")
-    check(sent[0]["idempotency_key"].startswith("bis-request-"), "stable idempotency key used")
+    check(re.fullmatch(r"bis-[0-9a-f]{12}-\d+", sent[0]["idempotency_key"] or "") is not None,
+          "idempotency key is namespaced and stable")
 
     token = base64.b64encode(f"admin:{args.secret}".encode()).decode()
     status, _ = call("GET", f"{app}/admin")
