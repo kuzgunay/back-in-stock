@@ -137,4 +137,15 @@ The suite runs against in-process fakes of the stock API and Resend (`httpx.Mock
 
 ## AI tools & time
 
-_To be filled in._
+- **Tool:** Claude Code (Anthropic), for design, implementation, tests and review. I directed the work, reviewed the output and made the deployment decisions.
+- **Time:** about 70 minutes end to end.
+  - ~40 min: building it and writing the test suite.
+  - ~30 min: fixing three CI issues, deploying to Railway with a persistent volume, and checking it against the test server.
+- **Checked against the test server**, with an injected 500 and a manual restock that sent no webhook:
+  - phantom restocks ignored;
+  - duplicate deliveries ignored;
+  - the failed email retried and delivered once;
+  - the silent restock caught by the reconciler;
+  - data intact after a redeploy.
+
+Live: https://back-in-stock-production-d78b.up.railway.app (`/embed`, `/admin`).
