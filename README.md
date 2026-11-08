@@ -23,6 +23,7 @@ docker run -p 8000:8000 \
   -e RESEND_API_KEY=... \
   -e RESEND_BASE_URL=https://api.resend.com \
   -e WEBHOOK_SECRET=... \
+  -e ADMIN_PASSWORD=... \
   back-in-stock
 ```
 
@@ -67,7 +68,7 @@ python scripts/smoke.py --app http://127.0.0.1:8000 --fake http://127.0.0.1:9100
 | `RECONCILE_INTERVAL_SECONDS` | no | `60` | How often to look for restocks whose webhook never arrived |
 | `LOG_LEVEL` | no | `INFO` | JSON logs on stdout; secrets are never logged and emails are masked |
 
-Only the variables from the brief are required. The admin password falls back to `WEBHOOK_SECRET`, so `/admin` is protected without any extra configuration. Set `ADMIN_PASSWORD` to keep the two separate.
+`ADMIN_PASSWORD` protects `/admin` (HTTP Basic, any username), as in the brief's env list. If it is not set, the admin password falls back to `WEBHOOK_SECRET`, so `/admin` is never left open.
 
 ## How duplicate and missed emails are prevented
 
